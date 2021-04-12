@@ -31,9 +31,8 @@ func NewCipher(key []byte) *Cipher {
 	k.Reset()
 
 	// Set the Cipher to a uniqe state based on the key.
-	var l = len(key)
-	for i := range k.state {
-		k.Core(key[i%l])
+	for _, val := range key {
+		k.Core(val)
 	}
 
 	k.shuffle()
