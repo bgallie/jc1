@@ -16,7 +16,11 @@
 */
 package jc1
 
-import "encoding/json"
+import (
+	"bytes"
+	"fmt"
+	"os"
+)
 
 // Cipher - the type defining the JC1 generator's state.
 type Cipher struct {
@@ -24,10 +28,14 @@ type Cipher struct {
 	p, q  byte
 }
 
-// NewCipher - create a new JC1 generator based on a given key.
+// NewCipher - create a new JC1 generator based on a given key. [Depreciated]
 func NewCipher(key []byte) *Cipher {
-	var k Cipher
+	fmt.Fprintln(os.Stderr, "WARNING: jc1.NewCipher() is deprecated.  Use jc1.New() instead")
+	return new(Cipher).New(key)
+}
 
+// New - create a new JC1 generator based on a given key.
+func (k *Cipher) New(key []byte) *Cipher {
 	k.Reset()
 
 	// Set the Cipher to a uniqe state based on the key.
@@ -37,7 +45,7 @@ func NewCipher(key []byte) *Cipher {
 
 	k.shuffle()
 
-	return &k
+	return k
 }
 
 // XORKeyStream - encrypt/decrypt the bytes in src.
@@ -77,10 +85,24 @@ func (key *Cipher) shuffle() {
 }
 
 // String - implement the Stringer interface
-func (key *Cipher) String() ([]byte, error) {
-	data := make(map[string]interface{})
-	data["p"] = key.p
-	data["q"] = key.q
-	data["state"] = key.state
-	return json.Marshal(data)
+func (key *Cipher) String() string {
+	var output bytes.Buffer
+	output.WriteString("jc1:\t[]byte{\n")
+	for i := 0; i < 256; i += 16 {
+		output.WriteString("\t\t")
+		if i != (256 - 16) {
+			for _, k := range key.state[i : i+15] {
+				output.WriteString(fmt.Sprintf("%02x, ", k))
+			}
+			output.WriteString(fmt.Sprintf("%02x,", key.state[i+15]))
+		} else {
+			for _, k := range key.state[i : i+15] {
+				output.WriteString(fmt.Sprintf("%02x, ", k))
+			}
+			output.WriteString(fmt.Sprintf("%02x})", key.state[i+15]))
+		}
+		output.WriteString("\n")
+	}
+	output.WriteString(fmt.Sprintf("\tp: %02x\n\tq: %02x", key.p, key.q))
+	return output.String()
 }

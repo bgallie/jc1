@@ -1,6 +1,11 @@
 // Package jc1 - project uberJc1.go
 package jc1
 
+import (
+	"fmt"
+	"os"
+)
+
 // UberJc1 - the type of the UberJc1 generator.
 type UberJc1 struct {
 	keys [4]*Cipher
@@ -9,12 +14,23 @@ type UberJc1 struct {
 // NewUberJc1 - create a new UberJc1 generator based on the key.
 func NewUberJc1(key []byte) *UberJc1 {
 	var k UberJc1
-	k.keys[0] = NewCipher(key)
-	k.keys[1] = NewCipher(k.keys[0].XORKeyStream(key))
-	k.keys[2] = NewCipher(k.keys[1].XORKeyStream(key))
-	k.keys[3] = NewCipher(k.keys[2].XORKeyStream(key))
+	k.keys[0] = new(Cipher).New(key)
+	k.keys[1] = new(Cipher).New(k.keys[0].XORKeyStream(key))
+	k.keys[2] = new(Cipher).New(k.keys[1].XORKeyStream(key))
+	k.keys[3] = new(Cipher).New(k.keys[2].XORKeyStream(key))
 
 	return &k
+}
+
+func (k *UberJc1) New(key []byte) *UberJc1 {
+	k.keys[0] = new(Cipher).New(key)
+	k.keys[1] = new(Cipher).New(k.keys[0].XORKeyStream(key))
+	k.keys[2] = new(Cipher).New(k.keys[1].XORKeyStream(key))
+	k.keys[3] = new(Cipher).New(k.keys[2].XORKeyStream(key))
+	fmt.Fprintln(os.Stderr, "WARNING: UberJc1.NewUberJc1() is deprecated.  Use UberJc1.New() instead")
+
+	return k
+
 }
 
 // XORKeyStream - encrypt/decrypt the bytes in src.
