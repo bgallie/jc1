@@ -13,13 +13,8 @@ type UberJc1 struct {
 
 // NewUberJc1 - create a new UberJc1 generator based on the key.
 func NewUberJc1(key []byte) *UberJc1 {
-	var k UberJc1
-	k.keys[0] = new(Cipher).New(key)
-	k.keys[1] = new(Cipher).New(k.keys[0].XORKeyStream(key))
-	k.keys[2] = new(Cipher).New(k.keys[1].XORKeyStream(key))
-	k.keys[3] = new(Cipher).New(k.keys[2].XORKeyStream(key))
-
-	return &k
+	fmt.Fprintln(os.Stderr, "WARNING: UberJc1.NewUberJc1() is deprecated.  Use UberJc1.New() instead")
+	return new(UberJc1).New(key)
 }
 
 func (k *UberJc1) New(key []byte) *UberJc1 {
@@ -27,7 +22,6 @@ func (k *UberJc1) New(key []byte) *UberJc1 {
 	k.keys[1] = new(Cipher).New(k.keys[0].XORKeyStream(key))
 	k.keys[2] = new(Cipher).New(k.keys[1].XORKeyStream(key))
 	k.keys[3] = new(Cipher).New(k.keys[2].XORKeyStream(key))
-	fmt.Fprintln(os.Stderr, "WARNING: UberJc1.NewUberJc1() is deprecated.  Use UberJc1.New() instead")
 
 	return k
 
