@@ -3,14 +3,12 @@ package jc1
 
 import (
 	"fmt"
-	"io"
 	"os"
 )
 
 // UberJc1 - the type of the UberJc1 generator.
 type UberJc1 struct {
 	keys [4]*Cipher
-	io.Reader
 }
 
 // NewUberJc1 - create a new UberJc1 generator based on the key.
