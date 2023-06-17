@@ -59,6 +59,11 @@ func (key *Cipher) XORKeyStream(src []byte) []byte {
 	return dst
 }
 
+// Read - implement a Reader for jc1
+func (key *Cipher) Read(buf []byte) (n int, err error) {
+	return copy(buf, key.XORKeyStream(buf)), nil
+}
+
 // Reset - resets the JC1 key to it's initial (unkeyed) state.
 func (key *Cipher) Reset() {
 	for i := range key.state {

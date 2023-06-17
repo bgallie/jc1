@@ -3,12 +3,14 @@ package jc1
 
 import (
 	"fmt"
+	"io"
 	"os"
 )
 
 // UberJc1 - the type of the UberJc1 generator.
 type UberJc1 struct {
 	keys [4]*Cipher
+	io.Reader
 }
 
 // NewUberJc1 - create a new UberJc1 generator based on the key.
@@ -36,6 +38,10 @@ func (key *UberJc1) XORKeyStream(src []byte) []byte {
 	}
 
 	return dst
+}
+
+func (key *UberJc1) Read(buf []byte) (n int, err error) {
+	return copy(buf, key.XORKeyStream(buf)), nil
 }
 
 // Reset - reset the UberJc1 key to an initial (unkeyed) state.

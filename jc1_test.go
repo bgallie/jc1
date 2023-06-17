@@ -74,9 +74,10 @@ func TestCipher_XORKeyStream(t *testing.T) {
 		src []byte
 	}
 	tests := []struct {
-		name string
-		args args
-		want []byte
+		name  string
+		args  args
+		want  []byte
+		wantS []byte
 	}{
 		{
 			name: "tcxs1",
@@ -84,14 +85,60 @@ func TestCipher_XORKeyStream(t *testing.T) {
 				key: []byte("SecretKey"),
 				src: make([]byte, 16),
 			},
-			want: []byte{140, 193, 72, 147, 56, 229, 146, 243, 252, 203, 221, 121, 52, 206, 154, 227},
+			want:  []byte{140, 193, 72, 147, 56, 229, 146, 243, 252, 203, 221, 121, 52, 206, 154, 227},
+			wantS: make([]byte, 16),
 		},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			key := new(Cipher).New(tt.args.key)
-			if got := key.XORKeyStream(tt.args.src); !reflect.DeepEqual(got, tt.want) {
+			got := key.XORKeyStream(tt.args.src)
+			if !reflect.DeepEqual(got, tt.want) {
 				t.Errorf("Cipher.XORKeyStream() = %v, want %v", got, tt.want)
+			}
+			if reflect.DeepEqual(got, tt.args.src) {
+				t.Errorf("Cipher.XORKeyStream() = %v, should not equal %v", got, tt.wantS)
+			}
+		})
+	}
+}
+
+func TestCipher_Read(t *testing.T) {
+	type args struct {
+		key []byte
+		buf []byte
+	}
+	tests := []struct {
+		name    string
+		args    args
+		want    []byte
+		wantN   int
+		wantErr bool
+	}{
+		{
+			name: "tcr1",
+			args: args{
+				key: []byte("SecretKey"),
+				buf: make([]byte, 16),
+			},
+			want:    []byte{140, 193, 72, 147, 56, 229, 146, 243, 252, 203, 221, 121, 52, 206, 154, 227},
+			wantN:   16,
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			key := new(Cipher).New(tt.args.key)
+			gotN, err := key.Read(tt.args.buf)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Cipher.Read() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotN != tt.wantN {
+				t.Errorf("Cipher.Read() = %v, want %v", gotN, tt.wantN)
+			}
+			if !reflect.DeepEqual(tt.args.buf, tt.want) {
+				t.Errorf("Cipher.Read(buf) = %v, want %v", tt.args.buf, tt.want)
 			}
 		})
 	}
