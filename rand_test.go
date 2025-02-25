@@ -111,8 +111,8 @@ func TestRand_New(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.rnd.New(tt.args.src)
 			defer got.StopRand()
-			if got.jc1Machine != tt.wantM {
-				t.Errorf("Rand.New().jc1Machine = %v, want = %v\n", got.jc1Machine, tt.wantM)
+			if got.machine != tt.wantM {
+				t.Errorf("Rand.New().jc1Machine = %v, want = %v\n", got.machine, tt.wantM)
 			}
 		})
 	}
@@ -604,6 +604,76 @@ func TestRand_Uint64n(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			if got := rnd.Uint64n(tt.args.max); got != tt.want {
 				t.Errorf("Rand.Uint64n() = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestUberRand_New(t *testing.T) {
+	jc1Machine := new(UberJc1).New([]byte("NowIsNotTheTimeToRunForFun"))
+	type args struct {
+		src *UberJc1
+	}
+	tests := []struct {
+		name  string
+		rnd   *Rand
+		args  args
+		wantM *UberJc1
+	}{
+		{
+			name:  "TestUberRand_New",
+			rnd:   new(Rand),
+			args:  args{src: jc1Machine},
+			wantM: jc1Machine,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := tt.rnd.New(tt.args.src)
+			defer got.StopRand()
+			if got.machine != tt.wantM {
+				t.Errorf("Rand.New().jc1Machine = %v, want = %v\n", got.machine, tt.wantM)
+			}
+		})
+	}
+}
+
+func TestUberRand_Read(t *testing.T) {
+	rnd := new(Rand).New(new(UberJc1).New([]byte("NowIsNotTheTimeToRunForFun")))
+	defer func() { rnd = nil }()
+	defer rnd.StopRand()
+	type args struct {
+		p []byte
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantN   int
+		wantErr bool
+		wantP   []byte
+	}{
+		{
+			name:    "Rand_Read1",
+			args:    args{p: make([]byte, CipherBlockBytes)},
+			wantN:   CipherBlockBytes,
+			wantErr: false,
+			wantP: []byte{
+				0xa5, 0xd2, 0xff, 0x12, 0xdc, 0xa1, 0x32, 0x28, 0x3a, 0xde, 0x47, 0xb2, 0x07, 0x7f, 0xec, 0x10,
+				0x7c, 0x3a, 0x98, 0x56, 0xe5, 0xc4, 0x04, 0xa6, 0xe4, 0xc1, 0x8c, 0x4b, 0x30, 0x10, 0xfb, 0x67},
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotN, err := rnd.Read(tt.args.p)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("UberRand.Read() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotN != tt.wantN {
+				t.Errorf("UberRand.Read() = %v, want %v", gotN, tt.wantN)
+			}
+			if !reflect.DeepEqual(tt.args.p, tt.wantP) {
+				t.Errorf("UberRand.Read(p) = %s, want %s\n", fmtByteSlice(tt.args.p), fmtByteSlice(tt.wantP))
 			}
 		})
 	}

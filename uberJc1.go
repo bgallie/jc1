@@ -50,6 +50,17 @@ func (key *UberJc1) Reset() {
 }
 
 // Core - the core UberJc1 algorithm.
-func (key *UberJc1) Core(b byte) byte {
-	return key.keys[3].Core(key.keys[2].Core(key.keys[1].Core(key.keys[0].Core(b))))
+func (k *UberJc1) Core(b byte) byte {
+	return k.keys[3].Core(k.keys[2].Core(k.keys[1].Core(k.keys[0].Core(b))))
+}
+
+// shuffle - shuffles the UberJC1 state.
+func (k *UberJc1) shuffle() {
+	for _, v := range k.keys {
+		v.shuffle()
+	}
+}
+
+func (k *UberJc1) String() string {
+	return k.keys[0].String() + k.keys[1].String() + k.keys[2].String() + k.keys[3].String()
 }

@@ -8,6 +8,15 @@ import (
 	"slices"
 )
 
+type rndSource interface {
+	Core(byte) byte
+	XORKeyStream([]byte) []byte
+	Read([]byte) (int, error)
+	Reset()
+	shuffle()
+	String() string
+}
+
 // Define constants needed for ikengine
 const (
 	BitsPerByte      int = 8                      // bits
@@ -35,17 +44,17 @@ const (
 // var emptyBlk CipherBlock
 
 type Rand struct {
-	jc1Machine *Cipher
+	machine rndSource
 }
 
 // New returns a Rand object.
-func (rnd *Rand) New(src *Cipher) *Rand {
-	rnd.jc1Machine = src
+func (rnd *Rand) New(src rndSource) *Rand {
+	rnd.machine = src
 	return rnd
 }
 
 func (rnd *Rand) StopRand() {
-	rnd.jc1Machine = nil
+	rnd.machine = nil
 }
 
 // Intn returns, as an int, a non-negative pseudo-random number in the
@@ -205,5 +214,5 @@ func Shuffle[S ~[]E, E any](s S, rnd *Rand) S {
 // always returns len(p) and a nil error.
 // Read should not be called concurrently with any other Rand method.
 func (rnd *Rand) Read(p []byte) (n int, err error) {
-	return copy(p, rnd.jc1Machine.XORKeyStream(p)), nil
+	return copy(p, rnd.machine.XORKeyStream(p)), nil
 }
