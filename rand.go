@@ -36,13 +36,6 @@ const (
 	MaxUint8             = (1<<(8) - 1)
 )
 
-// // CipherBlock is the data processed by the rotors and permutators.
-// // It consists of the length in bytes to process and the (32 bytes of) data to
-// // process.
-// type CipherBlock []byte
-
-// var emptyBlk CipherBlock
-
 type Rand struct {
 	machine rndSource
 }
